@@ -64,7 +64,6 @@ const start = async () => {
         relay.close();
 
         const results = normalizeZapReceiptEvents(zapReceiptEvents);
-        console.log("results");
 
         results.sort((a, b) => a.zapAmount - b.zapAmount);
 
