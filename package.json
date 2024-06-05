@@ -1,0 +1,32 @@
+{
+  "name": "fatzaps",
+  "version": "0.1.0",
+  "description": "Script that helps prepare content for the Fat Zaps bot to post on Nostr.",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamSamskies/fatzaps.git"
+  },
+  "keywords": [
+    "nostr",
+    "bitcoin",
+    "lightning",
+    "wavlake",
+    "music"
+  ],
+  "author": "Sam Samskies",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SamSamskies/fatzaps/issues"
+  },
+  "homepage": "https://github.com/SamSamskies/fatzaps#readme",
+  "dependencies": {
+    "light-bolt11-decoder": "3.1.1",
+    "nostr-tools": "2.7.0",
+    "ws": "^8.17.0"
+  }
+}
