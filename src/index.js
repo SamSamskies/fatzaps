@@ -36,8 +36,9 @@ const normalizeZapReceiptEvents = (zapReceiptEvents) => {
     const zapAmount = extractAmountInSats(getTag(event, "bolt11")[1]);
     const comment = zapEvent?.content;
     const zappedNoteId = getZappedEventNoteId(event);
+    const isAnonZap = zapEvent ? Boolean(getTag(zapEvent, "anon")) : false;
 
-    return { zapperNpub, zapAmount, comment, zappedNoteId };
+    return { zapperNpub, zapAmount, comment, zappedNoteId, isAnonZap };
   });
 };
 
@@ -70,14 +71,19 @@ const start = async () => {
         results
           .filter(({ zapperNpub }) => zapperNpub !== null)
           .slice(-numberOfEvents)
-          .forEach(({ zapperNpub, zapAmount, comment, zappedNoteId }) => {
-            const normalizedComment =
-              comment.length === 0 ? comment : `"${comment}"\n\n`;
+          .forEach(
+            ({ zapperNpub, zapAmount, comment, zappedNoteId, isAnonZap }) => {
+              const normalizedZapper = isAnonZap
+                ? "Anonymous"
+                : `nostr:${zapperNpub}`;
+              const normalizedComment =
+                comment.length === 0 ? comment : `"${comment}"\n\n`;
 
-            console.log(
-              `nostr:${zapperNpub} zapped ⚡️${zapAmount.toLocaleString()} sats\n\n${normalizedComment}nostr:${zappedNoteId}\n\n\n\n`,
-            );
-          });
+              console.log(
+                `${normalizedZapper} zapped ⚡️${zapAmount.toLocaleString()} sats\n\n${normalizedComment}nostr:${zappedNoteId}\n\n\n\n`,
+              );
+            },
+          );
       },
     },
   );
