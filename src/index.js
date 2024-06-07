@@ -11,11 +11,16 @@ const getTag = (event, tag) => event.tags.find((t) => t[0] === tag);
 const getEventAuthorNpub = (event) => npubEncode(event.pubkey);
 
 const extractAmountInSats = (invoice) => {
-  return (
-    lightBolt11Decoder
-      .decode(invoice)
-      .sections.find(({ name }) => name === "amount").value / 1000
-  );
+  try {
+    return (
+      lightBolt11Decoder
+        .decode(invoice)
+        .sections.find(({ name }) => name === "amount").value / 1000
+    );
+  } catch (err) {
+    console.error(err);
+    return 0;
+  }
 };
 
 const getZappedEventNoteId = (event) => noteEncode(getTag(event, "e")[1]);
