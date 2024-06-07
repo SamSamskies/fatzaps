@@ -1,5 +1,5 @@
 const { useWebSocketImplementation, Relay } = require("nostr-tools/relay");
-const { npubEncode, noteEncode } = require("nostr-tools/nip19");
+const { npubEncode, noteEncode, naddrEncode } = require("nostr-tools/nip19");
 const lightBolt11Decoder = require("light-bolt11-decoder");
 
 useWebSocketImplementation(require("ws"));
@@ -23,7 +23,24 @@ const extractAmountInSats = (invoice) => {
   }
 };
 
-const getZappedEventNoteId = (event) => noteEncode(getTag(event, "e")[1]);
+const getZappedEventNip19Id = (zapReceiptEvent) => {
+  const eTag = getTag(zapReceiptEvent, "e");
+
+  if (eTag) {
+    return noteEncode(eTag[1]);
+  } else {
+    const aTag = getTag(zapReceiptEvent, "a");
+    const [kind, pubkey, identifier] = aTag[1].split(":");
+    const recommendedRelay = aTag[2] ?? relayUri;
+
+    return naddrEncode({
+      pubkey,
+      identifier,
+      kind,
+      relays: [recommendedRelay],
+    });
+  }
+};
 
 const getZapEvent = (event) => {
   try {
@@ -40,10 +57,16 @@ const normalizeZapReceiptEvents = (zapReceiptEvents) => {
     const zapperNpub = zapEvent ? getEventAuthorNpub(zapEvent) : null;
     const zapAmount = extractAmountInSats(getTag(event, "bolt11")[1]);
     const comment = zapEvent?.content;
-    const zappedNoteId = getZappedEventNoteId(event);
+    const zappedNip19Id = getZappedEventNip19Id(event);
     const isAnonZap = zapEvent ? Boolean(getTag(zapEvent, "anon")) : false;
 
-    return { zapperNpub, zapAmount, comment, zappedNoteId, isAnonZap };
+    return {
+      zapperNpub,
+      zapAmount,
+      comment,
+      zappedNip19Id,
+      isAnonZap,
+    };
   });
 };
 
@@ -61,7 +84,7 @@ const start = async () => {
     ],
     {
       onevent(event) {
-        if (getTag(event, "e")) {
+        if (getTag(event, "a") || getTag(event, "e")) {
           zapReceiptEvents.push(event);
         }
       },
@@ -77,15 +100,18 @@ const start = async () => {
           .filter(({ zapperNpub }) => zapperNpub !== null)
           .slice(-numberOfEvents)
           .forEach(
-            ({ zapperNpub, zapAmount, comment, zappedNoteId, isAnonZap }) => {
+            ({ zapperNpub, zapAmount, comment, zappedNip19Id, isAnonZap }) => {
               const normalizedZapper = isAnonZap
                 ? "Anonymous"
                 : `nostr:${zapperNpub}`;
               const normalizedComment =
                 comment.length === 0 ? comment : `"${comment}"\n\n`;
+              const normalizedLink = zappedNip19Id.startsWith("naddr1")
+                ? `https://njump.me/${zappedNip19Id}`
+                : `nostr:${zappedNip19Id}`;
 
               console.log(
-                `${normalizedZapper} zapped ⚡️${zapAmount.toLocaleString()} sats\n\n${normalizedComment}nostr:${zappedNoteId}\n\n\n\n`,
+                `${normalizedZapper} zapped ⚡️${zapAmount.toLocaleString()} sats\n\n${normalizedComment}${normalizedLink}\n\n\n\n`,
               );
             },
           );
