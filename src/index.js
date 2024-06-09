@@ -79,7 +79,7 @@ const start = async () => {
     [
       {
         kinds: [9735],
-        since: Math.floor(Date.now() / 1000) - 12 * 60 * 60, // last 4 hours
+        since: Math.floor(Date.now() / 1000) - 12 * 60 * 60,
       },
     ],
     {
