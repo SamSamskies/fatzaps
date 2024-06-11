@@ -8,8 +8,6 @@ const relayUri = "wss://relay.nostr.band";
 
 const getTag = (event, tag) => event.tags.find((t) => t[0] === tag);
 
-const getEventAuthorNpub = (event) => npubEncode(event.pubkey);
-
 const extractAmountInSats = (invoice) => {
   try {
     return (
@@ -51,10 +49,16 @@ const getZapEvent = (event) => {
   }
 };
 
+const getZapperPubkey = (zapReceiptEvent) => {
+  const zapEvent = getZapEvent(zapReceiptEvent);
+
+  return zapEvent ? zapEvent.pubkey : null;
+};
+
 const normalizeZapReceiptEvents = (zapReceiptEvents) => {
   return zapReceiptEvents.map((event) => {
     const zapEvent = getZapEvent(event);
-    const zapperNpub = zapEvent ? getEventAuthorNpub(zapEvent) : null;
+    const zapperNpub = zapEvent ? npubEncode(zapEvent.pubkey) : null;
     const zapAmount = extractAmountInSats(getTag(event, "bolt11")[1]);
     const comment = zapEvent?.content;
     const zappedNip19Id = getZappedEventNip19Id(event);
@@ -84,7 +88,10 @@ const start = async () => {
     ],
     {
       onevent(event) {
-        if (getTag(event, "a") || getTag(event, "e")) {
+        const zapperPubkey = getZapperPubkey(event);
+        const isSelfZap = zapperPubkey === getTag(event, "p")[1];
+
+        if (!isSelfZap && (getTag(event, "a") || getTag(event, "e"))) {
           zapReceiptEvents.push(event);
         }
       },
