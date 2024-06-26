@@ -22,21 +22,26 @@ const extractAmountInSats = (invoice) => {
 };
 
 const getZappedEventNip19Id = (zapReceiptEvent) => {
-  const eTag = getTag(zapReceiptEvent, "e");
+  try {
+    const eTag = getTag(zapReceiptEvent, "e");
 
-  if (eTag) {
-    return noteEncode(eTag[1]);
-  } else {
-    const aTag = getTag(zapReceiptEvent, "a");
-    const [kind, pubkey, identifier] = aTag[1].split(":");
-    const recommendedRelay = aTag[2] ?? relayUri;
+    if (eTag) {
+      return noteEncode(eTag[1]);
+    } else {
+      const aTag = getTag(zapReceiptEvent, "a");
+      const [kind, pubkey, identifier] = aTag[1].split(":");
+      const recommendedRelay = aTag[2] ?? relayUri;
 
-    return naddrEncode({
-      pubkey,
-      identifier,
-      kind,
-      relays: [recommendedRelay],
-    });
+      return naddrEncode({
+        pubkey,
+        identifier,
+        kind,
+        relays: [recommendedRelay],
+      });
+    }
+  } catch (err) {
+    console.error(err);
+    return null;
   }
 };
 
@@ -104,7 +109,10 @@ const start = async () => {
         results.sort((a, b) => a.zapAmount - b.zapAmount);
 
         results
-          .filter(({ zapperNpub }) => zapperNpub !== null)
+          .filter(
+            ({ zapperNpub, zappedNip19Id }) =>
+              zapperNpub !== null && zappedNip19Id !== null,
+          )
           .slice(-numberOfEvents)
           .forEach(
             ({ zapperNpub, zapAmount, comment, zappedNip19Id, isAnonZap }) => {
