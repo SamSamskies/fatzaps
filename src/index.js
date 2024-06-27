@@ -41,6 +41,7 @@ const getZappedEventNip19Id = (zapReceiptEvent) => {
     }
   } catch (err) {
     console.error(err);
+    console.log(zapReceiptEvent);
     return null;
   }
 };
@@ -50,6 +51,7 @@ const getZapEvent = (event) => {
     return JSON.parse(getTag(event, "description")[1]);
   } catch (err) {
     console.error(err);
+    console.log(event);
     return null;
   }
 };
