@@ -77,6 +77,7 @@ const normalizeZapReceiptEvents = (zapReceiptEvents) => {
       comment,
       zappedNip19Id,
       isAnonZap,
+      zapReceiptId: event.id,
     };
   });
 };
@@ -117,7 +118,14 @@ const start = async () => {
           )
           .slice(-numberOfEvents)
           .forEach(
-            ({ zapperNpub, zapAmount, comment, zappedNip19Id, isAnonZap }) => {
+            ({
+              zapperNpub,
+              zapAmount,
+              comment,
+              zappedNip19Id,
+              isAnonZap,
+              zapReceiptId,
+            }) => {
               const normalizedZapper = isAnonZap
                 ? "Anonymous"
                 : `nostr:${zapperNpub}`;
@@ -126,6 +134,7 @@ const start = async () => {
               const normalizedLink = zappedNip19Id.startsWith("naddr1")
                 ? `https://njump.me/${zappedNip19Id}`
                 : `nostr:${zappedNip19Id}`;
+              console.log(zapReceiptId);
 
               console.log(
                 `${normalizedZapper} zapped ⚡️${zapAmount.toLocaleString()} sats\n\n${normalizedComment}${normalizedLink}\n\n\n\n`,
