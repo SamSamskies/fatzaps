@@ -4,7 +4,7 @@ const lightBolt11Decoder = require("light-bolt11-decoder");
 
 useWebSocketImplementation(require("ws"));
 
-const relayUri = process.argv[2] || "wss://relay.nostr.band";
+const relayUri = `wss://${process.argv[2]}` || "wss://relay.nostr.band";
 
 const getTag = (event, tag) => event.tags.find((t) => t[0] === tag);
 
