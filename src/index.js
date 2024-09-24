@@ -1,5 +1,10 @@
 const { useWebSocketImplementation, Relay } = require("nostr-tools/relay");
-const { npubEncode, noteEncode, naddrEncode } = require("nostr-tools/nip19");
+const {
+  npubEncode,
+  noteEncode,
+  naddrEncode,
+  neventEncode,
+} = require("nostr-tools/nip19");
 const lightBolt11Decoder = require("light-bolt11-decoder");
 
 useWebSocketImplementation(require("ws"));
@@ -79,7 +84,7 @@ const normalizeZapReceiptEvents = (zapReceiptEvents) => {
       comment,
       zappedNip19Id,
       isAnonZap,
-      zapReceiptId: event.id,
+      zapReceiptId: neventEncode({ id: event.id, relays: [relayUri] }),
     };
   });
 };
